@@ -89,7 +89,7 @@
         :href="'#tab-' + env.environment"
         @click="setEnv(env.environment)"
       >
-        {{ env.environment }}&nbsp;({{ env.count || 0 }})
+        {{ env.environment }}&nbsp;({{ environmentCounts[env.environment] || 0 }})
       </v-tab>
       <v-spacer />
       <v-btn
@@ -242,12 +242,19 @@ export default {
         .reduce((acc, alert) => acc || !alert.repeat, false)
     },
     totalCount() {
-      return this.$store.state.alerts.environments
+      return this.$store.getters['alerts/environmentCounts']
         .map(e => e.count).reduce((a, b) => a + b, 0)
     },
     environments() {
       return [{ environment: 'ALL', count: this.totalCount }]
         .concat(this.$store.getters['alerts/environmentCounts'])
+    },
+    environmentCounts() {
+      return this.alerts.reduce((grp, a) => {
+        grp[a.environment] = grp[a.environment] + 1 || 1
+        grp['ALL'] = grp['ALL'] + 1 || 1
+        return grp
+      }, {})
     },
     alertsByEnvironment() {
       return this.alerts.filter(alert =>
